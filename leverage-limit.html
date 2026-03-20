@@ -306,7 +306,7 @@ h1 {
       <!-- 5. 数量 -->
       <div class="form-group">
         <label>数量（Lot）<span style="font-size:0.65rem;color:var(--text-sub);">※0.1Lot単位 / 1Lot=10,000通貨</span></label>
-        <input type="number" id="lots" value="1.0" min="0.1" step="0.1">
+        <input type="number" id="lots" value="10" min="0.1" step="0.1">
       </div>
       <!-- 6. レバレッジ -->
       <div class="form-group">
@@ -319,7 +319,7 @@ h1 {
       <!-- 7. 有効証拠金 -->
       <div class="form-group">
         <label>有効証拠金（円）</label>
-        <input type="number" id="effectiveMargin" value="1000000" step="1000">
+        <input type="number" id="effectiveMargin" value="100000" step="1000">
       </div>
     </div>
 
@@ -458,7 +458,7 @@ const CURRENCY_PAIRS = [
   { code: 'CADJPY', name: 'CAD/JPY', rate: 109.800, buySwap: 120, sellSwap: -150, decimals: 3, maxLots: 1000 },
   { code: 'CHFJPY', name: 'CHF/JPY', rate: 170.500, buySwap: 50,  sellSwap: -80,  decimals: 3, maxLots: 1000 },
   { code: 'ZARJPY', name: 'ZAR/JPY', rate: 8.200,   buySwap: 16,  sellSwap: -24,  decimals: 3, maxLots: 3000 },
-  { code: 'TRYJPY', name: 'TRY/JPY', rate: 4.500,   buySwap: 25,  sellSwap: -62,  decimals: 3, maxLots: 1000 },
+  { code: 'TRYJPY', name: 'TRY/JPY', rate: 3.500,   buySwap: 25,  sellSwap: -62,  decimals: 3, maxLots: 1000 },
   { code: 'MXNJPY', name: 'MXN/JPY', rate: 8.800,   buySwap: 22,  sellSwap: -32,  decimals: 3, maxLots: 1000 },
   { code: 'EURUSD', name: 'EUR/USD', rate: 1.08600,  buySwap: -80, sellSwap: 50,   decimals: 5, maxLots: 3000 },
   { code: 'GBPUSD', name: 'GBP/USD', rate: 1.26900,  buySwap: -60, sellSwap: 30,   decimals: 5, maxLots: 1000 },
@@ -484,6 +484,7 @@ function init() {
     opt.textContent = pair.name;
     select.appendChild(opt);
   });
+  select.value = 'TRYJPY';
   onCurrencyPairChange();
   select.addEventListener('change', onCurrencyPairChange);
   document.getElementById('side').addEventListener('change', onSideChange);
