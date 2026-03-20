@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>スワップシミュレーション検証</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; margin: 20px; background: #f5f5f5; color: #222; }
+h1 { font-size: 1.2rem; color: #1a56db; }
+h2 { font-size: 1rem; color: #333; margin: 24px 0 8px; border-bottom: 2px solid #1a56db; padding-bottom: 4px; }
+table { border-collapse: collapse; font-size: 0.82rem; background: #fff; margin-bottom: 20px; }
+th { background: #1a56db; color: #fff; padding: 6px 10px; text-align: center; white-space: nowrap; }
+td { padding: 5px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; white-space: nowrap; }
+td.label { text-align: left; font-weight: 600; }
+.highlight { background: #fffbeb; }
+.params { display: grid; grid-template-columns: auto auto; gap: 2px 20px; font-size: 0.85rem; margin-bottom: 16px; max-width: 400px; }
+.params dt { font-weight: 600; color: #555; }
+.params dd { font-weight: 700; }
+.note { font-size: 0.75rem; color: #888; margin-top: 4px; }
+.event { background: #eef6ff; }
+</style></head><body>
+<h1>FX スワップシミュレーション — 検証用データ</h1>
+
+<h2>シミュレーション条件</h2>
+<dl class="params">
+<dt>通貨ペア</dt><dd>TRY/JPY</dd>
+<dt>レート</dt><dd>3.500</dd>
+<dt>スワップ</dt><dd>42円/日/1万通貨</dd>
+<dt>売買</dt><dd>買</dd>
+<dt>数量</dt><dd>1.0 Lot</dd>
+<dt>レバレッジ</dt><dd>25倍（個人）</dd>
+<dt>有効証拠金</dt><dd>1,400円</dd>
+<dt>再投資</dt><dd>ON — Lot指定 1.0 Lot</dd>
+<dt>必要証拠金/1Lot</dt><dd>1,400円</dd>
+<dt>建玉上限</dt><dd>1,000 Lot</dd>
+</dl>
+
+<h2>期間別サマリー</h2>
+<table>
+<tr><th>期間</th><th>経過日数</th><th>累計スワップ</th><th>有効証拠金</th><th>建玉数</th><th>必要証拠金</th><th>証拠金維持率</th><th>ロスカットライン</th><th>資金倍率</th><th>年利換算</th><th>実効レバレッジ</th><th>繰越スワップ</th></tr>
+<tr>
+<td class="label">1ヶ月</td><td>30</td>
+<td>1,260円</td><td>2,660円</td>
+<td>1.0</td><td>1,400円</td>
+<td>190.0%</td><td>3.369</td>
+<td>1.90x</td><td>1095.0%</td>
+<td>0.53倍</td><td>1,260円</td>
+</tr><tr>
+<td class="label">2ヶ月</td><td>60</td>
+<td>3,990円</td><td>5,390円</td>
+<td>3.0</td><td>4,200円</td>
+<td>128.3%</td><td>3.459</td>
+<td>3.85x</td><td>1733.8%</td>
+<td>0.78倍</td><td>1,190円</td>
+</tr><tr>
+<td class="label">3ヶ月</td><td>90</td>
+<td>10,668円</td><td>12,068円</td>
+<td>8.0</td><td>11,200円</td>
+<td>107.7%</td><td>3.489</td>
+<td>8.62x</td><td>3090.3%</td>
+<td>0.93倍</td><td>868円</td>
+</tr><tr>
+<td class="label">4ヶ月</td><td>120</td>
+<td>26,964円</td><td>28,364円</td>
+<td>20.0</td><td>28,000円</td>
+<td>101.3%</td><td>3.498</td>
+<td>20.26x</td><td>5858.3%</td>
+<td>0.99倍</td><td>364円</td>
+</tr><tr>
+<td class="label">5ヶ月</td><td>150</td>
+<td>66,360円</td><td>67,760円</td>
+<td>46.0</td><td>64,400円</td>
+<td>105.2%</td><td>3.492</td>
+<td>48.40x</td><td>11534.0%</td>
+<td>0.95倍</td><td>3,360円</td>
+</tr><tr>
+<td class="label">6ヶ月</td><td>180</td>
+<td>142,590円</td><td>143,990円</td>
+<td>76.0</td><td>106,400円</td>
+<td>135.3%</td><td>3.448</td>
+<td>102.85x</td><td>20652.9%</td>
+<td>0.74倍</td><td>37,590円</td>
+</tr><tr>
+<td class="label">1年</td><td>365</td>
+<td>1,447,950円</td><td>1,449,350円</td>
+<td>261.0</td><td>365,400円</td>
+<td>396.6%</td><td>3.067</td>
+<td>1035.25x</td><td>103425.0%</td>
+<td>0.25倍</td><td>1,083,950円</td>
+</tr><tr>
+<td class="label">5年</td><td>1,825</td>
+<td>51,283,890円</td><td>51,285,290円</td>
+<td>1000.0</td><td>1,400,000円</td>
+<td>3663.2%</td><td>-1.696</td>
+<td>36632.35x</td><td>732627.0%</td>
+<td>0.03倍</td><td>49,885,290円</td>
+</tr><tr>
+<td class="label">10年</td><td>3,650</td>
+<td>127,933,890円</td><td>127,935,290円</td>
+<td>1000.0</td><td>1,400,000円</td>
+<td>9138.2%</td><td>-9.681</td>
+<td>91382.35x</td><td>913813.5%</td>
+<td>0.01倍</td><td>126,535,290円</td>
+</tr><tr>
+<td class="label">35年</td><td>12,775</td>
+<td>511,183,890円</td><td>511,185,290円</td>
+<td>1000.0</td><td>1,400,000円</td>
+<td>36513.2%</td><td>-49.603</td>
+<td>365132.35x</td><td>1043232.4%</td>
+<td>0.00倍</td><td>509,785,290円</td>
+</tr></table><h2>再投資イベント一覧（最初の50件）</h2><table><tr><th>日目</th><th>追加Lot</th><th>追加後Lot数</th><th>繰越スワップ</th></tr><tr><td>34</td><td>1.0</td><td>2.0</td><td>28円</td></tr><tr><td>51</td><td>1.0</td><td>3.0</td><td>56円</td></tr><tr><td>62</td><td>1.0</td><td>4.0</td><td>42円</td></tr><tr><td>71</td><td>1.0</td><td>5.0</td><td>154円</td></tr><tr><td>77</td><td>1.0</td><td>6.0</td><td>14円</td></tr><tr><td>83</td><td>1.0</td><td>7.0</td><td>126円</td></tr><tr><td>88</td><td>1.0</td><td>8.0</td><td>196円</td></tr><tr><td>92</td><td>1.0</td><td>9.0</td><td>140円</td></tr><tr><td>96</td><td>1.0</td><td>10.0</td><td>252円</td></tr><tr><td>99</td><td>1.0</td><td>11.0</td><td>112円</td></tr><tr><td>102</td><td>1.0</td><td>12.0</td><td>98円</td></tr><tr><td>105</td><td>1.0</td><td>13.0</td><td>210円</td></tr><tr><td>108</td><td>1.0</td><td>14.0</td><td>448円</td></tr><tr><td>110</td><td>1.0</td><td>15.0</td><td>224円</td></tr><tr><td>112</td><td>1.0</td><td>16.0</td><td>84円</td></tr><tr><td>114</td><td>1.0</td><td>17.0</td><td>28円</td></tr><tr><td>116</td><td>1.0</td><td>18.0</td><td>56円</td></tr><tr><td>118</td><td>1.0</td><td>19.0</td><td>168円</td></tr><tr><td>120</td><td>1.0</td><td>20.0</td><td>364円</td></tr><tr><td>122</td><td>1.0</td><td>21.0</td><td>644円</td></tr><tr><td>123</td><td>1.0</td><td>22.0</td><td>126円</td></tr><tr><td>125</td><td>1.0</td><td>23.0</td><td>574円</td></tr><tr><td>126</td><td>1.0</td><td>24.0</td><td>140円</td></tr><tr><td>128</td><td>1.0</td><td>25.0</td><td>756円</td></tr><tr><td>129</td><td>1.0</td><td>26.0</td><td>406円</td></tr><tr><td>130</td><td>1.0</td><td>27.0</td><td>98円</td></tr><tr><td>132</td><td>1.0</td><td>28.0</td><td>966円</td></tr><tr><td>133</td><td>1.0</td><td>29.0</td><td>742円</td></tr><tr><td>134</td><td>1.0</td><td>30.0</td><td>560円</td></tr><tr><td>135</td><td>1.0</td><td>31.0</td><td>420円</td></tr><tr><td>136</td><td>1.0</td><td>32.0</td><td>322円</td></tr><tr><td>137</td><td>1.0</td><td>33.0</td><td>266円</td></tr><tr><td>138</td><td>1.0</td><td>34.0</td><td>252円</td></tr><tr><td>139</td><td>1.0</td><td>35.0</td><td>280円</td></tr><tr><td>140</td><td>1.0</td><td>36.0</td><td>350円</td></tr><tr><td>141</td><td>1.0</td><td>37.0</td><td>462円</td></tr><tr><td>142</td><td>1.0</td><td>38.0</td><td>616円</td></tr><tr><td>143</td><td>1.0</td><td>39.0</td><td>812円</td></tr><tr><td>144</td><td>1.0</td><td>40.0</td><td>1,050円</td></tr><tr><td>145</td><td>1.0</td><td>41.0</td><td>1,330円</td></tr><tr><td>146</td><td>1.0</td><td>42.0</td><td>1,652円</td></tr><tr><td>147</td><td>1.0</td><td>43.0</td><td>2,016円</td></tr><tr><td>148</td><td>1.0</td><td>44.0</td><td>2,422円</td></tr><tr><td>149</td><td>1.0</td><td>45.0</td><td>2,870円</td></tr><tr><td>150</td><td>1.0</td><td>46.0</td><td>3,360円</td></tr><tr><td>151</td><td>1.0</td><td>47.0</td><td>3,892円</td></tr><tr><td>152</td><td>1.0</td><td>48.0</td><td>4,466円</td></tr><tr><td>153</td><td>1.0</td><td>49.0</td><td>5,082円</td></tr><tr><td>154</td><td>1.0</td><td>50.0</td><td>5,740円</td></tr><tr><td>155</td><td>1.0</td><td>51.0</td><td>6,440円</td></tr><tr><td colspan='4' style='text-align:left;color:#888;'>全 999 件の再投資イベント</td></tr></table><h2>日次明細（1日目〜180日目）</h2><table><tr><th>日目</th><th>日次スワップ</th><th>累計スワップ</th><th>繰越スワップ</th><th>建玉数</th><th>追加</th><th>有効証拠金</th><th>必要証拠金</th><th>証拠金維持率</th><th>ロスカットライン</th></tr><tr>
+<td>1</td><td>42円</td><td>42円</td>
+<td>42円</td><td>1.0</td><td></td>
+<td>1,442円</td><td>1,400円</td>
+<td>103.0%</td><td>3.496</td>
+</tr><tr>
+<td>2</td><td>42円</td><td>84円</td>
+<td>84円</td><td>1.0</td><td></td>
+<td>1,484円</td><td>1,400円</td>
+<td>106.0%</td><td>3.491</td>
+</tr><tr>
+<td>3</td><td>42円</td><td>126円</td>
+<td>126円</td><td>1.0</td><td></td>
+<td>1,526円</td><td>1,400円</td>
+<td>109.0%</td><td>3.487</td>
+</tr><tr>
+<td>4</td><td>42円</td><td>168円</td>
+<td>168円</td><td>1.0</td><td></td>
+<td>1,568円</td><td>1,400円</td>
+<td>112.0%</td><td>3.482</td>
+</tr><tr>
+<td>5</td><td>42円</td><td>210円</td>
+<td>210円</td><td>1.0</td><td></td>
+<td>1,610円</td><td>1,400円</td>
+<td>115.0%</td><td>3.478</td>
+</tr><tr>
+<td>6</td><td>42円</td><td>252円</td>
+<td>252円</td><td>1.0</td><td></td>
+<td>1,652円</td><td>1,400円</td>
+<td>118.0%</td><td>3.474</td>
+</tr><tr>
+<td>7</td><td>42円</td><td>294円</td>
+<td>294円</td><td>1.0</td><td></td>
+<td>1,694円</td><td>1,400円</td>
+<td>121.0%</td><td>3.469</td>
+</tr><tr>
+<td>8</td><td>42円</td><td>336円</td>
+<td>336円</td><td>1.0</td><td></td>
+<td>1,736円</td><td>1,400円</td>
+<td>124.0%</td><td>3.465</td>
+</tr><tr>
+<td>9</td><td>42円</td><td>378円</td>
+<td>378円</td><td>1.0</td><td></td>
+<td>1,778円</td><td>1,400円</td>
+<td>127.0%</td><td>3.461</td>
+</tr><tr>
+<td>10</td><td>42円</td><td>420円</td>
+<td>420円</td><td>1.0</td><td></td>
+<td>1,820円</td><td>1,400円</td>
+<td>130.0%</td><td>3.456</td>
+</tr><tr>
+<td>11</td><td>42円</td><td>462円</td>
+<td>462円</td><td>1.0</td><td></td>
+<td>1,862円</td><td>1,400円</td>
+<td>133.0%</td><td>3.452</td>
+</tr><tr>
+<td>12</td><td>42円</td><td>504円</td>
+<td>504円</td><td>1.0</td><td></td>
+<td>1,904円</td><td>1,400円</td>
+<td>136.0%</td><td>3.447</td>
+</tr><tr>
+<td>13</td><td>42円</td><td>546円</td>
+<td>546円</td><td>1.0</td><td></td>
+<td>1,946円</td><td>1,400円</td>
+<td>139.0%</td><td>3.443</td>
+</tr><tr>
+<td>14</td><td>42円</td><td>588円</td>
+<td>588円</td><td>1.0</td><td></td>
+<td>1,988円</td><td>1,400円</td>
+<td>142.0%</td><td>3.439</td>
+</tr><tr>
+<td>15</td><td>42円</td><td>630円</td>
+<td>630円</td><td>1.0</td><td></td>
+<td>2,030円</td><td>1,400円</td>
+<td>145.0%</td><td>3.434</td>
+</tr><tr>
+<td>16</td><td>42円</td><td>672円</td>
+<td>672円</td><td>1.0</td><td></td>
+<td>2,072円</td><td>1,400円</td>
+<td>148.0%</td><td>3.430</td>
+</tr><tr>
+<td>17</td><td>42円</td><td>714円</td>
+<td>714円</td><td>1.0</td><td></td>
+<td>2,114円</td><td>1,400円</td>
+<td>151.0%</td><td>3.426</td>
+</tr><tr>
+<td>18</td><td>42円</td><td>756円</td>
+<td>756円</td><td>1.0</td><td></td>
+<td>2,156円</td><td>1,400円</td>
+<td>154.0%</td><td>3.421</td>
+</tr><tr>
+<td>19</td><td>42円</td><td>798円</td>
+<td>798円</td><td>1.0</td><td></td>
+<td>2,198円</td><td>1,400円</td>
+<td>157.0%</td><td>3.417</td>
+</tr><tr>
+<td>20</td><td>42円</td><td>840円</td>
+<td>840円</td><td>1.0</td><td></td>
+<td>2,240円</td><td>1,400円</td>
+<td>160.0%</td><td>3.413</td>
+</tr><tr>
+<td>21</td><td>42円</td><td>882円</td>
+<td>882円</td><td>1.0</td><td></td>
+<td>2,282円</td><td>1,400円</td>
+<td>163.0%</td><td>3.408</td>
+</tr><tr>
+<td>22</td><td>42円</td><td>924円</td>
+<td>924円</td><td>1.0</td><td></td>
+<td>2,324円</td><td>1,400円</td>
+<td>166.0%</td><td>3.404</td>
+</tr><tr>
+<td>23</td><td>42円</td><td>966円</td>
+<td>966円</td><td>1.0</td><td></td>
+<td>2,366円</td><td>1,400円</td>
+<td>169.0%</td><td>3.399</td>
+</tr><tr>
+<td>24</td><td>42円</td><td>1,008円</td>
+<td>1,008円</td><td>1.0</td><td></td>
+<td>2,408円</td><td>1,400円</td>
+<td>172.0%</td><td>3.395</td>
+</tr><tr>
+<td>25</td><td>42円</td><td>1,050円</td>
+<td>1,050円</td><td>1.0</td><td></td>
+<td>2,450円</td><td>1,400円</td>
+<td>175.0%</td><td>3.391</td>
+</tr><tr>
+<td>26</td><td>42円</td><td>1,092円</td>
+<td>1,092円</td><td>1.0</td><td></td>
+<td>2,492円</td><td>1,400円</td>
+<td>178.0%</td><td>3.386</td>
+</tr><tr>
+<td>27</td><td>42円</td><td>1,134円</td>
+<td>1,134円</td><td>1.0</td><td></td>
+<td>2,534円</td><td>1,400円</td>
+<td>181.0%</td><td>3.382</td>
+</tr><tr>
+<td>28</td><td>42円</td><td>1,176円</td>
+<td>1,176円</td><td>1.0</td><td></td>
+<td>2,576円</td><td>1,400円</td>
+<td>184.0%</td><td>3.377</td>
+</tr><tr>
+<td>29</td><td>42円</td><td>1,218円</td>
+<td>1,218円</td><td>1.0</td><td></td>
+<td>2,618円</td><td>1,400円</td>
+<td>187.0%</td><td>3.373</td>
+</tr><tr>
+<td>30</td><td>42円</td><td>1,260円</td>
+<td>1,260円</td><td>1.0</td><td></td>
+<td>2,660円</td><td>1,400円</td>
+<td>190.0%</td><td>3.369</td>
+</tr><tr>
+<td>31</td><td>42円</td><td>1,302円</td>
+<td>1,302円</td><td>1.0</td><td></td>
+<td>2,702円</td><td>1,400円</td>
+<td>193.0%</td><td>3.364</td>
+</tr><tr>
+<td>32</td><td>42円</td><td>1,344円</td>
+<td>1,344円</td><td>1.0</td><td></td>
+<td>2,744円</td><td>1,400円</td>
+<td>196.0%</td><td>3.360</td>
+</tr><tr>
+<td>33</td><td>42円</td><td>1,386円</td>
+<td>1,386円</td><td>1.0</td><td></td>
+<td>2,786円</td><td>1,400円</td>
+<td>199.0%</td><td>3.356</td>
+</tr><tr class="event">
+<td>34</td><td>42円</td><td>1,428円</td>
+<td>28円</td><td>2.0</td><td>1.0</td>
+<td>2,828円</td><td>2,800円</td>
+<td>101.0%</td><td>3.499</td>
+</tr><tr>
+<td>35</td><td>84円</td><td>1,512円</td>
+<td>112円</td><td>2.0</td><td></td>
+<td>2,912円</td><td>2,800円</td>
+<td>104.0%</td><td>3.494</td>
+</tr><tr>
+<td>36</td><td>84円</td><td>1,596円</td>
+<td>196円</td><td>2.0</td><td></td>
+<td>2,996円</td><td>2,800円</td>
+<td>107.0%</td><td>3.490</td>
+</tr><tr>
+<td>37</td><td>84円</td><td>1,680円</td>
+<td>280円</td><td>2.0</td><td></td>
+<td>3,080円</td><td>2,800円</td>
+<td>110.0%</td><td>3.485</td>
+</tr><tr>
+<td>38</td><td>84円</td><td>1,764円</td>
+<td>364円</td><td>2.0</td><td></td>
+<td>3,164円</td><td>2,800円</td>
+<td>113.0%</td><td>3.481</td>
+</tr><tr>
+<td>39</td><td>84円</td><td>1,848円</td>
+<td>448円</td><td>2.0</td><td></td>
+<td>3,248円</td><td>2,800円</td>
+<td>116.0%</td><td>3.477</td>
+</tr><tr>
+<td>40</td><td>84円</td><td>1,932円</td>
+<td>532円</td><td>2.0</td><td></td>
+<td>3,332円</td><td>2,800円</td>
+<td>119.0%</td><td>3.472</td>
+</tr><tr>
+<td>41</td><td>84円</td><td>2,016円</td>
+<td>616円</td><td>2.0</td><td></td>
+<td>3,416円</td><td>2,800円</td>
+<td>122.0%</td><td>3.468</td>
+</tr><tr>
+<td>42</td><td>84円</td><td>2,100円</td>
+<td>700円</td><td>2.0</td><td></td>
+<td>3,500円</td><td>2,800円</td>
+<td>125.0%</td><td>3.464</td>
+</tr><tr>
+<td>43</td><td>84円</td><td>2,184円</td>
+<td>784円</td><td>2.0</td><td></td>
+<td>3,584円</td><td>2,800円</td>
+<td>128.0%</td><td>3.459</td>
+</tr><tr>
+<td>44</td><td>84円</td><td>2,268円</td>
+<td>868円</td><td>2.0</td><td></td>
+<td>3,668円</td><td>2,800円</td>
+<td>131.0%</td><td>3.455</td>
+</tr><tr>
+<td>45</td><td>84円</td><td>2,352円</td>
+<td>952円</td><td>2.0</td><td></td>
+<td>3,752円</td><td>2,800円</td>
+<td>134.0%</td><td>3.450</td>
+</tr><tr>
+<td>46</td><td>84円</td><td>2,436円</td>
+<td>1,036円</td><td>2.0</td><td></td>
+<td>3,836円</td><td>2,800円</td>
+<td>137.0%</td><td>3.446</td>
+</tr><tr>
+<td>47</td><td>84円</td><td>2,520円</td>
+<td>1,120円</td><td>2.0</td><td></td>
+<td>3,920円</td><td>2,800円</td>
+<td>140.0%</td><td>3.442</td>
+</tr><tr>
+<td>48</td><td>84円</td><td>2,604円</td>
+<td>1,204円</td><td>2.0</td><td></td>
+<td>4,004円</td><td>2,800円</td>
+<td>143.0%</td><td>3.437</td>
+</tr><tr>
+<td>49</td><td>84円</td><td>2,688円</td>
+<td>1,288円</td><td>2.0</td><td></td>
+<td>4,088円</td><td>2,800円</td>
+<td>146.0%</td><td>3.433</td>
+</tr><tr>
+<td>50</td><td>84円</td><td>2,772円</td>
+<td>1,372円</td><td>2.0</td><td></td>
+<td>4,172円</td><td>2,800円</td>
+<td>149.0%</td><td>3.429</td>
+</tr><tr class="event">
+<td>51</td><td>84円</td><td>2,856円</td>
+<td>56円</td><td>3.0</td><td>1.0</td>
+<td>4,256円</td><td>4,200円</td>
+<td>101.3%</td><td>3.498</td>
+</tr><tr>
+<td>52</td><td>126円</td><td>2,982円</td>
+<td>182円</td><td>3.0</td><td></td>
+<td>4,382円</td><td>4,200円</td>
+<td>104.3%</td><td>3.494</td>
+</tr><tr>
+<td>53</td><td>126円</td><td>3,108円</td>
+<td>308円</td><td>3.0</td><td></td>
+<td>4,508円</td><td>4,200円</td>
+<td>107.3%</td><td>3.489</td>
+</tr><tr>
+<td>54</td><td>126円</td><td>3,234円</td>
+<td>434円</td><td>3.0</td><td></td>
+<td>4,634円</td><td>4,200円</td>
+<td>110.3%</td><td>3.485</td>
+</tr><tr>
+<td>55</td><td>126円</td><td>3,360円</td>
+<td>560円</td><td>3.0</td><td></td>
+<td>4,760円</td><td>4,200円</td>
+<td>113.3%</td><td>3.481</td>
+</tr><tr>
+<td>56</td><td>126円</td><td>3,486円</td>
+<td>686円</td><td>3.0</td><td></td>
+<td>4,886円</td><td>4,200円</td>
+<td>116.3%</td><td>3.476</td>
+</tr><tr>
+<td>57</td><td>126円</td><td>3,612円</td>
+<td>812円</td><td>3.0</td><td></td>
+<td>5,012円</td><td>4,200円</td>
+<td>119.3%</td><td>3.472</td>
+</tr><tr>
+<td>58</td><td>126円</td><td>3,738円</td>
+<td>938円</td><td>3.0</td><td></td>
+<td>5,138円</td><td>4,200円</td>
+<td>122.3%</td><td>3.467</td>
+</tr><tr>
+<td>59</td><td>126円</td><td>3,864円</td>
+<td>1,064円</td><td>3.0</td><td></td>
+<td>5,264円</td><td>4,200円</td>
+<td>125.3%</td><td>3.463</td>
+</tr><tr>
+<td>60</td><td>126円</td><td>3,990円</td>
+<td>1,190円</td><td>3.0</td><td></td>
+<td>5,390円</td><td>4,200円</td>
+<td>128.3%</td><td>3.459</td>
+</tr><tr>
+<td>61</td><td>126円</td><td>4,116円</td>
+<td>1,316円</td><td>3.0</td><td></td>
+<td>5,516円</td><td>4,200円</td>
+<td>131.3%</td><td>3.454</td>
+</tr><tr class="event">
+<td>62</td><td>126円</td><td>4,242円</td>
+<td>42円</td><td>4.0</td><td>1.0</td>
+<td>5,642円</td><td>5,600円</td>
+<td>100.8%</td><td>3.499</td>
+</tr><tr>
+<td>63</td><td>168円</td><td>4,410円</td>
+<td>210円</td><td>4.0</td><td></td>
+<td>5,810円</td><td>5,600円</td>
+<td>103.8%</td><td>3.495</td>
+</tr><tr>
+<td>64</td><td>168円</td><td>4,578円</td>
+<td>378円</td><td>4.0</td><td></td>
+<td>5,978円</td><td>5,600円</td>
+<td>106.7%</td><td>3.490</td>
+</tr><tr>
+<td>65</td><td>168円</td><td>4,746円</td>
+<td>546円</td><td>4.0</td><td></td>
+<td>6,146円</td><td>5,600円</td>
+<td>109.7%</td><td>3.486</td>
+</tr><tr>
+<td>66</td><td>168円</td><td>4,914円</td>
+<td>714円</td><td>4.0</td><td></td>
+<td>6,314円</td><td>5,600円</td>
+<td>112.8%</td><td>3.481</td>
+</tr><tr>
+<td>67</td><td>168円</td><td>5,082円</td>
+<td>882円</td><td>4.0</td><td></td>
+<td>6,482円</td><td>5,600円</td>
+<td>115.8%</td><td>3.477</td>
+</tr><tr>
+<td>68</td><td>168円</td><td>5,250円</td>
+<td>1,050円</td><td>4.0</td><td></td>
+<td>6,650円</td><td>5,600円</td>
+<td>118.8%</td><td>3.473</td>
+</tr><tr>
+<td>69</td><td>168円</td><td>5,418円</td>
+<td>1,218円</td><td>4.0</td><td></td>
+<td>6,818円</td><td>5,600円</td>
+<td>121.8%</td><td>3.468</td>
+</tr><tr>
+<td>70</td><td>168円</td><td>5,586円</td>
+<td>1,386円</td><td>4.0</td><td></td>
+<td>6,986円</td><td>5,600円</td>
+<td>124.8%</td><td>3.464</td>
+</tr><tr class="event">
+<td>71</td><td>168円</td><td>5,754円</td>
+<td>154円</td><td>5.0</td><td>1.0</td>
+<td>7,154円</td><td>7,000円</td>
+<td>102.2%</td><td>3.497</td>
+</tr><tr>
+<td>72</td><td>210円</td><td>5,964円</td>
+<td>364円</td><td>5.0</td><td></td>
+<td>7,364円</td><td>7,000円</td>
+<td>105.2%</td><td>3.492</td>
+</tr><tr>
+<td>73</td><td>210円</td><td>6,174円</td>
+<td>574円</td><td>5.0</td><td></td>
+<td>7,574円</td><td>7,000円</td>
+<td>108.2%</td><td>3.488</td>
+</tr><tr>
+<td>74</td><td>210円</td><td>6,384円</td>
+<td>784円</td><td>5.0</td><td></td>
+<td>7,784円</td><td>7,000円</td>
+<td>111.2%</td><td>3.484</td>
+</tr><tr>
+<td>75</td><td>210円</td><td>6,594円</td>
+<td>994円</td><td>5.0</td><td></td>
+<td>7,994円</td><td>7,000円</td>
+<td>114.2%</td><td>3.479</td>
+</tr><tr>
+<td>76</td><td>210円</td><td>6,804円</td>
+<td>1,204円</td><td>5.0</td><td></td>
+<td>8,204円</td><td>7,000円</td>
+<td>117.2%</td><td>3.475</td>
+</tr><tr class="event">
+<td>77</td><td>210円</td><td>7,014円</td>
+<td>14円</td><td>6.0</td><td>1.0</td>
+<td>8,414円</td><td>8,400円</td>
+<td>100.2%</td><td>3.500</td>
+</tr><tr>
+<td>78</td><td>252円</td><td>7,266円</td>
+<td>266円</td><td>6.0</td><td></td>
+<td>8,666円</td><td>8,400円</td>
+<td>103.2%</td><td>3.495</td>
+</tr><tr>
+<td>79</td><td>252円</td><td>7,518円</td>
+<td>518円</td><td>6.0</td><td></td>
+<td>8,918円</td><td>8,400円</td>
+<td>106.2%</td><td>3.491</td>
+</tr><tr>
+<td>80</td><td>252円</td><td>7,770円</td>
+<td>770円</td><td>6.0</td><td></td>
+<td>9,170円</td><td>8,400円</td>
+<td>109.2%</td><td>3.487</td>
+</tr><tr>
+<td>81</td><td>252円</td><td>8,022円</td>
+<td>1,022円</td><td>6.0</td><td></td>
+<td>9,422円</td><td>8,400円</td>
+<td>112.2%</td><td>3.482</td>
+</tr><tr>
+<td>82</td><td>252円</td><td>8,274円</td>
+<td>1,274円</td><td>6.0</td><td></td>
+<td>9,674円</td><td>8,400円</td>
+<td>115.2%</td><td>3.478</td>
+</tr><tr class="event">
+<td>83</td><td>252円</td><td>8,526円</td>
+<td>126円</td><td>7.0</td><td>1.0</td>
+<td>9,926円</td><td>9,800円</td>
+<td>101.3%</td><td>3.498</td>
+</tr><tr>
+<td>84</td><td>294円</td><td>8,820円</td>
+<td>420円</td><td>7.0</td><td></td>
+<td>10,220円</td><td>9,800円</td>
+<td>104.3%</td><td>3.494</td>
+</tr><tr>
+<td>85</td><td>294円</td><td>9,114円</td>
+<td>714円</td><td>7.0</td><td></td>
+<td>10,514円</td><td>9,800円</td>
+<td>107.3%</td><td>3.489</td>
+</tr><tr>
+<td>86</td><td>294円</td><td>9,408円</td>
+<td>1,008円</td><td>7.0</td><td></td>
+<td>10,808円</td><td>9,800円</td>
+<td>110.3%</td><td>3.485</td>
+</tr><tr>
+<td>87</td><td>294円</td><td>9,702円</td>
+<td>1,302円</td><td>7.0</td><td></td>
+<td>11,102円</td><td>9,800円</td>
+<td>113.3%</td><td>3.481</td>
+</tr><tr class="event">
+<td>88</td><td>294円</td><td>9,996円</td>
+<td>196円</td><td>8.0</td><td>1.0</td>
+<td>11,396円</td><td>11,200円</td>
+<td>101.8%</td><td>3.497</td>
+</tr><tr>
+<td>89</td><td>336円</td><td>10,332円</td>
+<td>532円</td><td>8.0</td><td></td>
+<td>11,732円</td><td>11,200円</td>
+<td>104.8%</td><td>3.493</td>
+</tr><tr>
+<td>90</td><td>336円</td><td>10,668円</td>
+<td>868円</td><td>8.0</td><td></td>
+<td>12,068円</td><td>11,200円</td>
+<td>107.7%</td><td>3.489</td>
+</tr><tr>
+<td>91</td><td>336円</td><td>11,004円</td>
+<td>1,204円</td><td>8.0</td><td></td>
+<td>12,404円</td><td>11,200円</td>
+<td>110.8%</td><td>3.484</td>
+</tr><tr class="event">
+<td>92</td><td>336円</td><td>11,340円</td>
+<td>140円</td><td>9.0</td><td>1.0</td>
+<td>12,740円</td><td>12,600円</td>
+<td>101.1%</td><td>3.498</td>
+</tr><tr>
+<td>93</td><td>378円</td><td>11,718円</td>
+<td>518円</td><td>9.0</td><td></td>
+<td>13,118円</td><td>12,600円</td>
+<td>104.1%</td><td>3.494</td>
+</tr><tr>
+<td>94</td><td>378円</td><td>12,096円</td>
+<td>896円</td><td>9.0</td><td></td>
+<td>13,496円</td><td>12,600円</td>
+<td>107.1%</td><td>3.490</td>
+</tr><tr>
+<td>95</td><td>378円</td><td>12,474円</td>
+<td>1,274円</td><td>9.0</td><td></td>
+<td>13,874円</td><td>12,600円</td>
+<td>110.1%</td><td>3.485</td>
+</tr><tr class="event">
+<td>96</td><td>378円</td><td>12,852円</td>
+<td>252円</td><td>10.0</td><td>1.0</td>
+<td>14,252円</td><td>14,000円</td>
+<td>101.8%</td><td>3.497</td>
+</tr><tr>
+<td>97</td><td>420円</td><td>13,272円</td>
+<td>672円</td><td>10.0</td><td></td>
+<td>14,672円</td><td>14,000円</td>
+<td>104.8%</td><td>3.493</td>
+</tr><tr>
+<td>98</td><td>420円</td><td>13,692円</td>
+<td>1,092円</td><td>10.0</td><td></td>
+<td>15,092円</td><td>14,000円</td>
+<td>107.8%</td><td>3.489</td>
+</tr><tr class="event">
+<td>99</td><td>420円</td><td>14,112円</td>
+<td>112円</td><td>11.0</td><td>1.0</td>
+<td>15,512円</td><td>15,400円</td>
+<td>100.7%</td><td>3.499</td>
+</tr><tr>
+<td>100</td><td>462円</td><td>14,574円</td>
+<td>574円</td><td>11.0</td><td></td>
+<td>15,974円</td><td>15,400円</td>
+<td>103.7%</td><td>3.495</td>
+</tr><tr>
+<td>101</td><td>462円</td><td>15,036円</td>
+<td>1,036円</td><td>11.0</td><td></td>
+<td>16,436円</td><td>15,400円</td>
+<td>106.7%</td><td>3.490</td>
+</tr><tr class="event">
+<td>102</td><td>462円</td><td>15,498円</td>
+<td>98円</td><td>12.0</td><td>1.0</td>
+<td>16,898円</td><td>16,800円</td>
+<td>100.6%</td><td>3.499</td>
+</tr><tr>
+<td>103</td><td>504円</td><td>16,002円</td>
+<td>602円</td><td>12.0</td><td></td>
+<td>17,402円</td><td>16,800円</td>
+<td>103.6%</td><td>3.495</td>
+</tr><tr>
+<td>104</td><td>504円</td><td>16,506円</td>
+<td>1,106円</td><td>12.0</td><td></td>
+<td>17,906円</td><td>16,800円</td>
+<td>106.6%</td><td>3.490</td>
+</tr><tr class="event">
+<td>105</td><td>504円</td><td>17,010円</td>
+<td>210円</td><td>13.0</td><td>1.0</td>
+<td>18,410円</td><td>18,200円</td>
+<td>101.2%</td><td>3.498</td>
+</tr><tr>
+<td>106</td><td>546円</td><td>17,556円</td>
+<td>756円</td><td>13.0</td><td></td>
+<td>18,956円</td><td>18,200円</td>
+<td>104.2%</td><td>3.494</td>
+</tr><tr>
+<td>107</td><td>546円</td><td>18,102円</td>
+<td>1,302円</td><td>13.0</td><td></td>
+<td>19,502円</td><td>18,200円</td>
+<td>107.2%</td><td>3.490</td>
+</tr><tr class="event">
+<td>108</td><td>546円</td><td>18,648円</td>
+<td>448円</td><td>14.0</td><td>1.0</td>
+<td>20,048円</td><td>19,600円</td>
+<td>102.3%</td><td>3.497</td>
+</tr><tr>
+<td>109</td><td>588円</td><td>19,236円</td>
+<td>1,036円</td><td>14.0</td><td></td>
+<td>20,636円</td><td>19,600円</td>
+<td>105.3%</td><td>3.492</td>
+</tr><tr class="event">
+<td>110</td><td>588円</td><td>19,824円</td>
+<td>224円</td><td>15.0</td><td>1.0</td>
+<td>21,224円</td><td>21,000円</td>
+<td>101.1%</td><td>3.498</td>
+</tr><tr>
+<td>111</td><td>630円</td><td>20,454円</td>
+<td>854円</td><td>15.0</td><td></td>
+<td>21,854円</td><td>21,000円</td>
+<td>104.1%</td><td>3.494</td>
+</tr><tr class="event">
+<td>112</td><td>630円</td><td>21,084円</td>
+<td>84円</td><td>16.0</td><td>1.0</td>
+<td>22,484円</td><td>22,400円</td>
+<td>100.4%</td><td>3.499</td>
+</tr><tr>
+<td>113</td><td>672円</td><td>21,756円</td>
+<td>756円</td><td>16.0</td><td></td>
+<td>23,156円</td><td>22,400円</td>
+<td>103.4%</td><td>3.495</td>
+</tr><tr class="event">
+<td>114</td><td>672円</td><td>22,428円</td>
+<td>28円</td><td>17.0</td><td>1.0</td>
+<td>23,828円</td><td>23,800円</td>
+<td>100.1%</td><td>3.500</td>
+</tr><tr>
+<td>115</td><td>714円</td><td>23,142円</td>
+<td>742円</td><td>17.0</td><td></td>
+<td>24,542円</td><td>23,800円</td>
+<td>103.1%</td><td>3.495</td>
+</tr><tr class="event">
+<td>116</td><td>714円</td><td>23,856円</td>
+<td>56円</td><td>18.0</td><td>1.0</td>
+<td>25,256円</td><td>25,200円</td>
+<td>100.2%</td><td>3.500</td>
+</tr><tr>
+<td>117</td><td>756円</td><td>24,612円</td>
+<td>812円</td><td>18.0</td><td></td>
+<td>26,012円</td><td>25,200円</td>
+<td>103.2%</td><td>3.495</td>
+</tr><tr class="event">
+<td>118</td><td>756円</td><td>25,368円</td>
+<td>168円</td><td>19.0</td><td>1.0</td>
+<td>26,768円</td><td>26,600円</td>
+<td>100.6%</td><td>3.499</td>
+</tr><tr>
+<td>119</td><td>798円</td><td>26,166円</td>
+<td>966円</td><td>19.0</td><td></td>
+<td>27,566円</td><td>26,600円</td>
+<td>103.6%</td><td>3.495</td>
+</tr><tr class="event">
+<td>120</td><td>798円</td><td>26,964円</td>
+<td>364円</td><td>20.0</td><td>1.0</td>
+<td>28,364円</td><td>28,000円</td>
+<td>101.3%</td><td>3.498</td>
+</tr><tr>
+<td>121</td><td>840円</td><td>27,804円</td>
+<td>1,204円</td><td>20.0</td><td></td>
+<td>29,204円</td><td>28,000円</td>
+<td>104.3%</td><td>3.494</td>
+</tr><tr class="event">
+<td>122</td><td>840円</td><td>28,644円</td>
+<td>644円</td><td>21.0</td><td>1.0</td>
+<td>30,044円</td><td>29,400円</td>
+<td>102.2%</td><td>3.497</td>
+</tr><tr class="event">
+<td>123</td><td>882円</td><td>29,526円</td>
+<td>126円</td><td>22.0</td><td>1.0</td>
+<td>30,926円</td><td>30,800円</td>
+<td>100.4%</td><td>3.499</td>
+</tr><tr>
+<td>124</td><td>924円</td><td>30,450円</td>
+<td>1,050円</td><td>22.0</td><td></td>
+<td>31,850円</td><td>30,800円</td>
+<td>103.4%</td><td>3.495</td>
+</tr><tr class="event">
+<td>125</td><td>924円</td><td>31,374円</td>
+<td>574円</td><td>23.0</td><td>1.0</td>
+<td>32,774円</td><td>32,200円</td>
+<td>101.8%</td><td>3.497</td>
+</tr><tr class="event">
+<td>126</td><td>966円</td><td>32,340円</td>
+<td>140円</td><td>24.0</td><td>1.0</td>
+<td>33,740円</td><td>33,600円</td>
+<td>100.4%</td><td>3.499</td>
+</tr><tr>
+<td>127</td><td>1,008円</td><td>33,348円</td>
+<td>1,148円</td><td>24.0</td><td></td>
+<td>34,748円</td><td>33,600円</td>
+<td>103.4%</td><td>3.495</td>
+</tr><tr class="event">
+<td>128</td><td>1,008円</td><td>34,356円</td>
+<td>756円</td><td>25.0</td><td>1.0</td>
+<td>35,756円</td><td>35,000円</td>
+<td>102.2%</td><td>3.497</td>
+</tr><tr class="event">
+<td>129</td><td>1,050円</td><td>35,406円</td>
+<td>406円</td><td>26.0</td><td>1.0</td>
+<td>36,806円</td><td>36,400円</td>
+<td>101.1%</td><td>3.498</td>
+</tr><tr class="event">
+<td>130</td><td>1,092円</td><td>36,498円</td>
+<td>98円</td><td>27.0</td><td>1.0</td>
+<td>37,898円</td><td>37,800円</td>
+<td>100.3%</td><td>3.500</td>
+</tr><tr>
+<td>131</td><td>1,134円</td><td>37,632円</td>
+<td>1,232円</td><td>27.0</td><td></td>
+<td>39,032円</td><td>37,800円</td>
+<td>103.3%</td><td>3.495</td>
+</tr><tr class="event">
+<td>132</td><td>1,134円</td><td>38,766円</td>
+<td>966円</td><td>28.0</td><td>1.0</td>
+<td>40,166円</td><td>39,200円</td>
+<td>102.5%</td><td>3.496</td>
+</tr><tr class="event">
+<td>133</td><td>1,176円</td><td>39,942円</td>
+<td>742円</td><td>29.0</td><td>1.0</td>
+<td>41,342円</td><td>40,600円</td>
+<td>101.8%</td><td>3.497</td>
+</tr><tr class="event">
+<td>134</td><td>1,218円</td><td>41,160円</td>
+<td>560円</td><td>30.0</td><td>1.0</td>
+<td>42,560円</td><td>42,000円</td>
+<td>101.3%</td><td>3.498</td>
+</tr><tr class="event">
+<td>135</td><td>1,260円</td><td>42,420円</td>
+<td>420円</td><td>31.0</td><td>1.0</td>
+<td>43,820円</td><td>43,400円</td>
+<td>101.0%</td><td>3.499</td>
+</tr><tr class="event">
+<td>136</td><td>1,302円</td><td>43,722円</td>
+<td>322円</td><td>32.0</td><td>1.0</td>
+<td>45,122円</td><td>44,800円</td>
+<td>100.7%</td><td>3.499</td>
+</tr><tr class="event">
+<td>137</td><td>1,344円</td><td>45,066円</td>
+<td>266円</td><td>33.0</td><td>1.0</td>
+<td>46,466円</td><td>46,200円</td>
+<td>100.6%</td><td>3.499</td>
+</tr><tr class="event">
+<td>138</td><td>1,386円</td><td>46,452円</td>
+<td>252円</td><td>34.0</td><td>1.0</td>
+<td>47,852円</td><td>47,600円</td>
+<td>100.5%</td><td>3.499</td>
+</tr><tr class="event">
+<td>139</td><td>1,428円</td><td>47,880円</td>
+<td>280円</td><td>35.0</td><td>1.0</td>
+<td>49,280円</td><td>49,000円</td>
+<td>100.6%</td><td>3.499</td>
+</tr><tr class="event">
+<td>140</td><td>1,470円</td><td>49,350円</td>
+<td>350円</td><td>36.0</td><td>1.0</td>
+<td>50,750円</td><td>50,400円</td>
+<td>100.7%</td><td>3.499</td>
+</tr><tr class="event">
+<td>141</td><td>1,512円</td><td>50,862円</td>
+<td>462円</td><td>37.0</td><td>1.0</td>
+<td>52,262円</td><td>51,800円</td>
+<td>100.9%</td><td>3.499</td>
+</tr><tr class="event">
+<td>142</td><td>1,554円</td><td>52,416円</td>
+<td>616円</td><td>38.0</td><td>1.0</td>
+<td>53,816円</td><td>53,200円</td>
+<td>101.2%</td><td>3.498</td>
+</tr><tr class="event">
+<td>143</td><td>1,596円</td><td>54,012円</td>
+<td>812円</td><td>39.0</td><td>1.0</td>
+<td>55,412円</td><td>54,600円</td>
+<td>101.5%</td><td>3.498</td>
+</tr><tr class="event">
+<td>144</td><td>1,638円</td><td>55,650円</td>
+<td>1,050円</td><td>40.0</td><td>1.0</td>
+<td>57,050円</td><td>56,000円</td>
+<td>101.9%</td><td>3.497</td>
+</tr><tr class="event">
+<td>145</td><td>1,680円</td><td>57,330円</td>
+<td>1,330円</td><td>41.0</td><td>1.0</td>
+<td>58,730円</td><td>57,400円</td>
+<td>102.3%</td><td>3.497</td>
+</tr><tr class="event">
+<td>146</td><td>1,722円</td><td>59,052円</td>
+<td>1,652円</td><td>42.0</td><td>1.0</td>
+<td>60,452円</td><td>58,800円</td>
+<td>102.8%</td><td>3.496</td>
+</tr><tr class="event">
+<td>147</td><td>1,764円</td><td>60,816円</td>
+<td>2,016円</td><td>43.0</td><td>1.0</td>
+<td>62,216円</td><td>60,200円</td>
+<td>103.3%</td><td>3.495</td>
+</tr><tr class="event">
+<td>148</td><td>1,806円</td><td>62,622円</td>
+<td>2,422円</td><td>44.0</td><td>1.0</td>
+<td>64,022円</td><td>61,600円</td>
+<td>103.9%</td><td>3.494</td>
+</tr><tr class="event">
+<td>149</td><td>1,848円</td><td>64,470円</td>
+<td>2,870円</td><td>45.0</td><td>1.0</td>
+<td>65,870円</td><td>63,000円</td>
+<td>104.6%</td><td>3.493</td>
+</tr><tr class="event">
+<td>150</td><td>1,890円</td><td>66,360円</td>
+<td>3,360円</td><td>46.0</td><td>1.0</td>
+<td>67,760円</td><td>64,400円</td>
+<td>105.2%</td><td>3.492</td>
+</tr><tr class="event">
+<td>151</td><td>1,932円</td><td>68,292円</td>
+<td>3,892円</td><td>47.0</td><td>1.0</td>
+<td>69,692円</td><td>65,800円</td>
+<td>105.9%</td><td>3.491</td>
+</tr><tr class="event">
+<td>152</td><td>1,974円</td><td>70,266円</td>
+<td>4,466円</td><td>48.0</td><td>1.0</td>
+<td>71,666円</td><td>67,200円</td>
+<td>106.6%</td><td>3.490</td>
+</tr><tr class="event">
+<td>153</td><td>2,016円</td><td>72,282円</td>
+<td>5,082円</td><td>49.0</td><td>1.0</td>
+<td>73,682円</td><td>68,600円</td>
+<td>107.4%</td><td>3.489</td>
+</tr><tr class="event">
+<td>154</td><td>2,058円</td><td>74,340円</td>
+<td>5,740円</td><td>50.0</td><td>1.0</td>
+<td>75,740円</td><td>70,000円</td>
+<td>108.2%</td><td>3.488</td>
+</tr><tr class="event">
+<td>155</td><td>2,100円</td><td>76,440円</td>
+<td>6,440円</td><td>51.0</td><td>1.0</td>
+<td>77,840円</td><td>71,400円</td>
+<td>109.0%</td><td>3.487</td>
+</tr><tr class="event">
+<td>156</td><td>2,142円</td><td>78,582円</td>
+<td>7,182円</td><td>52.0</td><td>1.0</td>
+<td>79,982円</td><td>72,800円</td>
+<td>109.9%</td><td>3.486</td>
+</tr><tr class="event">
+<td>157</td><td>2,184円</td><td>80,766円</td>
+<td>7,966円</td><td>53.0</td><td>1.0</td>
+<td>82,166円</td><td>74,200円</td>
+<td>110.7%</td><td>3.484</td>
+</tr><tr class="event">
+<td>158</td><td>2,226円</td><td>82,992円</td>
+<td>8,792円</td><td>54.0</td><td>1.0</td>
+<td>84,392円</td><td>75,600円</td>
+<td>111.6%</td><td>3.483</td>
+</tr><tr class="event">
+<td>159</td><td>2,268円</td><td>85,260円</td>
+<td>9,660円</td><td>55.0</td><td>1.0</td>
+<td>86,660円</td><td>77,000円</td>
+<td>112.5%</td><td>3.482</td>
+</tr><tr class="event">
+<td>160</td><td>2,310円</td><td>87,570円</td>
+<td>10,570円</td><td>56.0</td><td>1.0</td>
+<td>88,970円</td><td>78,400円</td>
+<td>113.5%</td><td>3.480</td>
+</tr><tr class="event">
+<td>161</td><td>2,352円</td><td>89,922円</td>
+<td>11,522円</td><td>57.0</td><td>1.0</td>
+<td>91,322円</td><td>79,800円</td>
+<td>114.4%</td><td>3.479</td>
+</tr><tr class="event">
+<td>162</td><td>2,394円</td><td>92,316円</td>
+<td>12,516円</td><td>58.0</td><td>1.0</td>
+<td>93,716円</td><td>81,200円</td>
+<td>115.4%</td><td>3.478</td>
+</tr><tr class="event">
+<td>163</td><td>2,436円</td><td>94,752円</td>
+<td>13,552円</td><td>59.0</td><td>1.0</td>
+<td>96,152円</td><td>82,600円</td>
+<td>116.4%</td><td>3.476</td>
+</tr><tr class="event">
+<td>164</td><td>2,478円</td><td>97,230円</td>
+<td>14,630円</td><td>60.0</td><td>1.0</td>
+<td>98,630円</td><td>84,000円</td>
+<td>117.4%</td><td>3.475</td>
+</tr><tr class="event">
+<td>165</td><td>2,520円</td><td>99,750円</td>
+<td>15,750円</td><td>61.0</td><td>1.0</td>
+<td>101,150円</td><td>85,400円</td>
+<td>118.4%</td><td>3.473</td>
+</tr><tr class="event">
+<td>166</td><td>2,562円</td><td>102,312円</td>
+<td>16,912円</td><td>62.0</td><td>1.0</td>
+<td>103,712円</td><td>86,800円</td>
+<td>119.5%</td><td>3.472</td>
+</tr><tr class="event">
+<td>167</td><td>2,604円</td><td>104,916円</td>
+<td>18,116円</td><td>63.0</td><td>1.0</td>
+<td>106,316円</td><td>88,200円</td>
+<td>120.5%</td><td>3.470</td>
+</tr><tr class="event">
+<td>168</td><td>2,646円</td><td>107,562円</td>
+<td>19,362円</td><td>64.0</td><td>1.0</td>
+<td>108,962円</td><td>89,600円</td>
+<td>121.6%</td><td>3.468</td>
+</tr><tr class="event">
+<td>169</td><td>2,688円</td><td>110,250円</td>
+<td>20,650円</td><td>65.0</td><td>1.0</td>
+<td>111,650円</td><td>91,000円</td>
+<td>122.7%</td><td>3.467</td>
+</tr><tr class="event">
+<td>170</td><td>2,730円</td><td>112,980円</td>
+<td>21,980円</td><td>66.0</td><td>1.0</td>
+<td>114,380円</td><td>92,400円</td>
+<td>123.8%</td><td>3.465</td>
+</tr><tr class="event">
+<td>171</td><td>2,772円</td><td>115,752円</td>
+<td>23,352円</td><td>67.0</td><td>1.0</td>
+<td>117,152円</td><td>93,800円</td>
+<td>124.9%</td><td>3.464</td>
+</tr><tr class="event">
+<td>172</td><td>2,814円</td><td>118,566円</td>
+<td>24,766円</td><td>68.0</td><td>1.0</td>
+<td>119,966円</td><td>95,200円</td>
+<td>126.0%</td><td>3.462</td>
+</tr><tr class="event">
+<td>173</td><td>2,856円</td><td>121,422円</td>
+<td>26,222円</td><td>69.0</td><td>1.0</td>
+<td>122,822円</td><td>96,600円</td>
+<td>127.1%</td><td>3.460</td>
+</tr><tr class="event">
+<td>174</td><td>2,898円</td><td>124,320円</td>
+<td>27,720円</td><td>70.0</td><td>1.0</td>
+<td>125,720円</td><td>98,000円</td>
+<td>128.3%</td><td>3.459</td>
+</tr><tr class="event">
+<td>175</td><td>2,940円</td><td>127,260円</td>
+<td>29,260円</td><td>71.0</td><td>1.0</td>
+<td>128,660円</td><td>99,400円</td>
+<td>129.4%</td><td>3.457</td>
+</tr><tr class="event">
+<td>176</td><td>2,982円</td><td>130,242円</td>
+<td>30,842円</td><td>72.0</td><td>1.0</td>
+<td>131,642円</td><td>100,800円</td>
+<td>130.6%</td><td>3.455</td>
+</tr><tr class="event">
+<td>177</td><td>3,024円</td><td>133,266円</td>
+<td>32,466円</td><td>73.0</td><td>1.0</td>
+<td>134,666円</td><td>102,200円</td>
+<td>131.8%</td><td>3.454</td>
+</tr><tr class="event">
+<td>178</td><td>3,066円</td><td>136,332円</td>
+<td>34,132円</td><td>74.0</td><td>1.0</td>
+<td>137,732円</td><td>103,600円</td>
+<td>132.9%</td><td>3.452</td>
+</tr><tr class="event">
+<td>179</td><td>3,108円</td><td>139,440円</td>
+<td>35,840円</td><td>75.0</td><td>1.0</td>
+<td>140,840円</td><td>105,000円</td>
+<td>134.1%</td><td>3.450</td>
+</tr><tr class="event">
+<td>180</td><td>3,150円</td><td>142,590円</td>
+<td>37,590円</td><td>76.0</td><td>1.0</td>
+<td>143,990円</td><td>106,400円</td>
+<td>135.3%</td><td>3.448</td>
+</tr></table>
+<p class="note">※ 青色の行は再投資（建玉追加）が発生した日です</p>
+</body></html>
