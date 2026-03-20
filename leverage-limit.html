@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FX スワップシミュレーション（実効レバレッジ維持版）</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+:root {
+  --primary: #1a56db;
+  --primary-light: #e8eefb;
+  --accent: #f59e0b;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-sub: #64748b;
+  --border: #e2e8f0;
+  --success: #10b981;
+  --danger: #ef4444;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+h1 {
+  text-align: center;
+  font-size: 1.4rem;
+  margin-bottom: 6px;
+  color: var(--primary);
+  letter-spacing: 0.02em;
+}
+.subtitle {
+  text-align: center;
+  color: var(--text-sub);
+  font-size: 0.82rem;
+  margin-bottom: 28px;
+}
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
+}
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+/* Form */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+.form-group label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  margin-bottom: 3px;
+}
+.form-group input,
+.form-group select {
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.92rem;
+  color: var(--text);
+  background: #fff;
+  transition: border-color 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26,86,219,0.08);
+}
+.input-with-btn {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.input-with-btn input {
+  flex: 1;
+  min-width: 0;
+}
+.btn-fetch {
+  padding: 0 14px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.btn-fetch:hover { background: #1347b8; }
+
+/* Reinvestment */
+.reinvest-section {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: var(--primary-light);
+  border-radius: 8px;
+}
+.reinvest-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #cbd5e1;
+  border-radius: 24px;
+  transition: 0.3s;
+}
+.toggle-slider:before {
+  content: "";
+  position: absolute;
+  height: 18px; width: 18px;
+  left: 3px; bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
+.reinvest-options { display: none; gap: 12px; }
+.reinvest-options.show { display: flex; flex-wrap: wrap; }
+.reinvest-options .form-group { flex: 1; min-width: 150px; }
+
+/* Button */
+.btn-calc {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 10px;
+}
+.btn-calc:hover { background: #1347b8; }
+
+/* Results */
+.results-section { display: none; }
+.results-section.show { display: block; }
+
+/* Status grid */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .status-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.status-item {
+  text-align: center;
+  padding: 16px 8px;
+  background: var(--primary-light);
+  border-radius: 10px;
+}
+.status-item .status-label {
+  font-size: 0.7rem;
+  color: var(--text-sub);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.status-item .status-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* Period detail table */
+.period-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  margin-top: 12px;
+}
+.period-table th {
+  background: var(--primary);
+  color: #fff;
+  padding: 9px 6px;
+  text-align: center;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.period-table td {
+  padding: 9px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.period-table tbody tr:hover { background: var(--primary-light); }
+
+/* Chart */
+.chart-container {
+  position: relative;
+  height: 320px;
+}
+
+/* Debug */
+.debug-section { display: none; }
+.debug-section.show { display: block; margin-top: 12px; }
+.debug-toggle {
+  font-size: 0.72rem;
+  color: var(--text-sub);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Disclaimer */
+.disclaimer {
+  background: #fefce8;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 0.72rem;
+  color: #92400e;
+  line-height: 1.9;
+  margin-top: 16px;
+}
+.disclaimer h3 {
+  font-size: 0.78rem;
+  margin-bottom: 6px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>FX スワップシミュレーション（実効レバレッジ維持版）</h1>
+  <p class="subtitle">当初の実効レバレッジを維持しながらスワップ再投資をシミュレーションします</p>
+
+  <!-- Input Form -->
+  <div class="card">
+    <div class="card-title">シミュレーション条件</div>
+    <div class="form-grid">
+      <!-- 1. 通貨ペア -->
+      <div class="form-group">
+        <label>通貨ペア</label>
+        <select id="currencyPair"></select>
+      </div>
+      <!-- 2. レート -->
+      <div class="form-group">
+        <label>レート</label>
+        <div class="input-with-btn">
+          <input type="number" id="rate" step="0.001">
+          <button class="btn-fetch" type="button" onclick="fetchRate()">現在レート</button>
+        </div>
+      </div>
+      <!-- 3. スワップ -->
+      <div class="form-group">
+        <label>スワップポイント（円/日/1万通貨）</label>
+        <div class="input-with-btn">
+          <input type="number" id="swapPoint" step="0.1">
+          <button class="btn-fetch" type="button" onclick="fetchSwap()">最新スワップ</button>
+        </div>
+      </div>
+      <!-- 4. 売買 -->
+      <div class="form-group">
+        <label>売買</label>
+        <select id="side">
+          <option value="buy">買</option>
+          <option value="sell">売</option>
+        </select>
+      </div>
+      <!-- 5. 数量 -->
+      <div class="form-group">
+        <label>数量（Lot）<span style="font-size:0.65rem;color:var(--text-sub);">※0.1Lot単位 / 1Lot=10,000通貨</span></label>
+        <input type="number" id="lots" value="1.0" min="0.1" step="0.1">
+      </div>
+      <!-- 6. レバレッジ -->
+      <div class="form-group">
+        <label>レバレッジ</label>
+        <select id="accountType">
+          <option value="personal">個人口座　25倍</option>
+          <option value="corporate">法人口座　50倍</option>
+        </select>
+      </div>
+      <!-- 7. 有効証拠金 -->
+      <div class="form-group">
+        <label>有効証拠金（円）</label>
+        <input type="number" id="effectiveMargin" value="1000000" step="1000">
+      </div>
+    </div>
+
+    <!-- 8. スワップ再投資 -->
+    <div class="reinvest-section">
+      <div class="reinvest-toggle">
+        <label class="toggle-switch">
+          <input type="checkbox" id="reinvestToggle">
+          <span class="toggle-slider"></span>
+        </label>
+        <span style="font-weight:600;font-size:0.85rem;">スワップ再投資</span>
+        <span id="reinvestStatus" style="font-size:0.8rem;color:var(--text-sub);">OFF</span>
+      </div>
+      <div class="reinvest-options" id="reinvestOptions">
+        <div class="form-group">
+          <label>再投資単位</label>
+          <select id="reinvestType">
+            <option value="lot">Lot指定</option>
+            <option value="yen">円指定</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label id="reinvestValueLabel">再投資Lot数</label>
+          <input type="number" id="reinvestValue" value="1.0" min="0.1" step="0.1">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-calc" onclick="calculate()">シミュレーション実行</button>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section" id="resultsSection">
+
+    <!-- 計算結果: 4 items -->
+    <div class="card">
+      <div class="card-title">計算結果</div>
+      <div class="status-grid" style="grid-template-columns: repeat(5, 1fr);">
+        <div class="status-item">
+          <div class="status-label">建玉必要証拠金</div>
+          <div class="status-value" id="statusRequiredMargin">-</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">当初実効レバレッジ</div>
+          <div class="status-value" id="statusEffectiveLeverage">-</div>
+        </div>
+        <div class="status-item" style="background:#fff3cd;border:1px solid #f59e0b;">
+          <div class="status-label" style="color:#92400e;">再投資レバレッジ上限</div>
+          <div class="status-value" id="statusLeverageLimit" style="color:#d97706;">-</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">ロスカットライン</div>
+          <div class="status-value" id="statusLoscutRate">-</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">1日あたりスワップ</div>
+          <div class="status-value" id="statusDailySwap">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- スワップ合計金額 -->
+    <div class="card">
+      <div class="card-title">スワップ合計金額</div>
+      <div class="chart-container">
+        <canvas id="swapChart"></canvas>
+      </div>
+      <table class="period-table">
+        <thead>
+          <tr>
+            <th>運用期間</th>
+            <th>利回り</th>
+            <th>実効レバレッジ</th>
+            <th>ロスカットライン</th>
+          </tr>
+        </thead>
+        <tbody id="periodBody"></tbody>
+      </table>
+    </div>
+
+    <!-- 建玉数量推移 -->
+    <div class="card">
+      <div class="card-title">建玉数量推移</div>
+      <div class="chart-container">
+        <canvas id="positionChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Debug -->
+    <div class="card">
+      <span class="debug-toggle" onclick="toggleDebug()">&#9654; 内部検証テーブルを表示</span>
+      <div class="debug-section" id="debugSection">
+        <div style="overflow-x:auto;">
+          <table class="period-table" id="debugTable">
+            <thead>
+              <tr>
+                <th>期間</th>
+                <th>経過日数</th>
+                <th>累計スワップ</th>
+                <th>有効証拠金</th>
+                <th>Lot数</th>
+                <th>必要証拠金</th>
+                <th>証拠金維持率</th>
+                <th>ロスカットライン</th>
+              </tr>
+            </thead>
+            <tbody id="debugBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <h3>ご注意事項</h3>
+      <p>
+        ・本シミュレーションは、現在のスワップポイントが将来にわたって一定であることを前提とした試算であり、実際の運用結果を保証するものではありません。<br>
+        ・スワップポイントは日々変動し、受取りから支払いに転じる場合があります。<br>
+        ・為替レートの変動により、評価損益が発生し、ロスカットが執行される可能性があります。<br>
+        ・本シミュレーションでは、スプレッド、取引手数料等のコストは考慮しておりません。<br>
+        ・FX取引にはリスクが伴います。お取引の際は、契約締結前交付書面等をよくお読みいただき、リスクを十分にご理解の上、お客様ご自身の判断と責任においてお取引ください。
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+
+const CURRENCY_PAIRS = [
+  { code: 'USDJPY', name: 'USD/JPY', rate: 149.500, buySwap: 200, sellSwap: -230, decimals: 3, maxLots: 3000 },
+  { code: 'EURJPY', name: 'EUR/JPY', rate: 162.300, buySwap: 160, sellSwap: -190, decimals: 3, maxLots: 3000 },
+  { code: 'GBPJPY', name: 'GBP/JPY', rate: 189.800, buySwap: 250, sellSwap: -280, decimals: 3, maxLots: 3000 },
+  { code: 'AUDJPY', name: 'AUD/JPY', rate: 97.500,  buySwap: 110, sellSwap: -140, decimals: 3, maxLots: 3000 },
+  { code: 'NZDJPY', name: 'NZD/JPY', rate: 90.200,  buySwap: 100, sellSwap: -130, decimals: 3, maxLots: 2000 },
+  { code: 'CADJPY', name: 'CAD/JPY', rate: 109.800, buySwap: 120, sellSwap: -150, decimals: 3, maxLots: 1000 },
+  { code: 'CHFJPY', name: 'CHF/JPY', rate: 170.500, buySwap: 50,  sellSwap: -80,  decimals: 3, maxLots: 1000 },
+  { code: 'ZARJPY', name: 'ZAR/JPY', rate: 8.200,   buySwap: 16,  sellSwap: -24,  decimals: 3, maxLots: 3000 },
+  { code: 'TRYJPY', name: 'TRY/JPY', rate: 4.500,   buySwap: 42,  sellSwap: -62,  decimals: 3, maxLots: 1000 },
+  { code: 'MXNJPY', name: 'MXN/JPY', rate: 8.800,   buySwap: 22,  sellSwap: -32,  decimals: 3, maxLots: 1000 },
+  { code: 'EURUSD', name: 'EUR/USD', rate: 1.08600,  buySwap: -80, sellSwap: 50,   decimals: 5, maxLots: 3000 },
+  { code: 'GBPUSD', name: 'GBP/USD', rate: 1.26900,  buySwap: -60, sellSwap: 30,   decimals: 5, maxLots: 1000 },
+  { code: 'AUDUSD', name: 'AUD/USD', rate: 0.65200,  buySwap: -40, sellSwap: 10,   decimals: 5, maxLots: 1000 },
+];
+
+const PERIODS = [
+  { label: '1ヶ月', days: 30 },
+  { label: '1年',   days: 365 },
+  { label: '5年',   days: 365 * 5 },
+  { label: '10年',  days: 365 * 10 },
+  { label: '35年',  days: 365 * 35 },
+];
+
+let swapChart = null;
+let positionChart = null;
+
+function init() {
+  const select = document.getElementById('currencyPair');
+  CURRENCY_PAIRS.forEach(pair => {
+    const opt = document.createElement('option');
+    opt.value = pair.code;
+    opt.textContent = pair.name;
+    select.appendChild(opt);
+  });
+  onCurrencyPairChange();
+  select.addEventListener('change', onCurrencyPairChange);
+  document.getElementById('side').addEventListener('change', onSideChange);
+
+  document.getElementById('reinvestToggle').addEventListener('change', function() {
+    const opts = document.getElementById('reinvestOptions');
+    const status = document.getElementById('reinvestStatus');
+    if (this.checked) {
+      opts.classList.add('show');
+      status.textContent = 'ON';
+      status.style.color = '#10b981';
+    } else {
+      opts.classList.remove('show');
+      status.textContent = 'OFF';
+      status.style.color = 'var(--text-sub)';
+    }
+  });
+
+  document.getElementById('reinvestType').addEventListener('change', function() {
+    const label = document.getElementById('reinvestValueLabel');
+    const input = document.getElementById('reinvestValue');
+    if (this.value === 'yen') {
+      label.textContent = '再投資金額（円）';
+      input.value = 100000; input.step = 1000; input.min = 1000;
+    } else {
+      label.textContent = '再投資Lot数';
+      input.value = 1.0; input.step = 0.1; input.min = 0.1;
+    }
+  });
+}
+
+function onCurrencyPairChange() {
+  const pair = getSelectedPair();
+  if (!pair) return;
+  document.getElementById('rate').value = pair.rate;
+  onSideChange();
+}
+function onSideChange() {
+  const pair = getSelectedPair();
+  if (!pair) return;
+  const side = document.getElementById('side').value;
+  document.getElementById('swapPoint').value = side === 'buy' ? pair.buySwap : pair.sellSwap;
+}
+function getSelectedPair() {
+  const code = document.getElementById('currencyPair').value;
+  return CURRENCY_PAIRS.find(p => p.code === code);
+}
+
+// Fetch buttons (use sample data for now; replace with API)
+function fetchRate() {
+  const pair = getSelectedPair();
+  if (pair) document.getElementById('rate').value = pair.rate;
+}
+function fetchSwap() {
+  const pair = getSelectedPair();
+  if (!pair) return;
+  const side = document.getElementById('side').value;
+  document.getElementById('swapPoint').value = side === 'buy' ? pair.buySwap : pair.sellSwap;
+}
+
+// ========================================
+// Calculation
+// ========================================
+function calculate() {
+  const pair = getSelectedPair();
+  const accountType = document.getElementById('accountType').value;
+  const side = document.getElementById('side').value;
+  const lots = parseFloat(document.getElementById('lots').value);
+  const rate = parseFloat(document.getElementById('rate').value);
+  const swapPerDay = parseFloat(document.getElementById('swapPoint').value);
+  const initialMargin = parseFloat(document.getElementById('effectiveMargin').value);
+  const reinvest = document.getElementById('reinvestToggle').checked;
+  const reinvestType = document.getElementById('reinvestType').value;
+  const reinvestValue = parseFloat(document.getElementById('reinvestValue').value);
+  const leverage = accountType === 'personal' ? 25 : 50;
+
+  if (isNaN(lots) || isNaN(rate) || isNaN(swapPerDay) || isNaN(initialMargin)) {
+    alert('入力値を確認してください。'); return;
+  }
+  if (lots < 0.1) { alert('数量は0.1Lot以上を入力してください。'); return; }
+
+  const requiredMarginPerLot = rate * 10000 / leverage;
+  const results = [];
+  for (const period of PERIODS) {
+    const sim = simulate(lots, rate, swapPerDay, initialMargin, leverage, reinvest, reinvestType, reinvestValue, period.days, side, requiredMarginPerLot, pair.maxLots);
+    sim.periodLabel = period.label;
+    sim.periodDays = period.days;
+    results.push(sim);
+  }
+  renderResults(results, initialMargin, rate, leverage, side, pair, lots, swapPerDay);
+}
+
+function simulate(initialLots, rate, swapPerDay, initialMargin, leverage, reinvest, reinvestType, reinvestValue, totalDays, side, requiredMarginPerLot, maxLots) {
+  let currentLots = initialLots;
+  let totalSwap = 0;
+  let pendingSwap = 0;
+
+  // 当初の実効レバレッジ = 取引総額 / 有効証拠金
+  const initialEffLev = (rate * initialLots * 10000) / initialMargin;
+
+  for (let day = 1; day <= totalDays; day++) {
+    const dailySwap = swapPerDay * currentLots;
+    totalSwap += dailySwap;
+    pendingSwap += dailySwap;
+    if (reinvest && pendingSwap > 0 && currentLots < maxLots) {
+      const effMargin = initialMargin + totalSwap;
+      if (reinvestType === 'yen') {
+        if (pendingSwap >= reinvestValue) {
+          let addLots = Math.floor(reinvestValue / requiredMarginPerLot * 10) / 10;
+          if (addLots >= 0.1) {
+            const remaining = Math.floor((maxLots - currentLots) * 10) / 10;
+            if (remaining > 0) {
+              addLots = Math.min(addLots, remaining);
+              const newEffLev = (rate * (currentLots + addLots) * 10000) / effMargin;
+              if (newEffLev <= initialEffLev) {
+                currentLots = Math.round((currentLots + addLots) * 10) / 10;
+                pendingSwap -= reinvestValue;
+              }
+            }
+          }
+        }
+      } else {
+        const req = reinvestValue * requiredMarginPerLot;
+        if (pendingSwap >= req) {
+          let addLots = reinvestValue;
+          const remaining = Math.floor((maxLots - currentLots) * 10) / 10;
+          if (remaining > 0) {
+            addLots = Math.min(addLots, remaining);
+            const newEffLev = (rate * (currentLots + addLots) * 10000) / effMargin;
+            if (newEffLev <= initialEffLev) {
+              const actualCost = addLots * requiredMarginPerLot;
+              currentLots = Math.round((currentLots + addLots) * 10) / 10;
+              pendingSwap -= actualCost;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const finalMargin = initialMargin + totalSwap;
+  const totalRequiredMargin = currentLots * requiredMarginPerLot;
+  const marginRatio = totalRequiredMargin > 0 ? (finalMargin / totalRequiredMargin) * 100 : Infinity;
+  const multiplier = finalMargin / initialMargin;
+  const years = totalDays / 365;
+  const annualReturn = years > 0 ? ((multiplier - 1) / years) * 100 : 0;
+  const effectiveLeverage = (rate * currentLots * 10000) / finalMargin;
+  const loscutRate = calcLoscutRate(finalMargin, currentLots, rate, leverage, side);
+
+  return { totalSwap, finalMargin, currentLots, totalRequiredMargin, marginRatio, multiplier, annualReturn, effectiveLeverage, loscutRate, initialEffLev };
+}
+
+function calcLoscutRate(effectiveMargin, lots, entryRate, leverage, side) {
+  const units = lots * 10000;
+  if (units === 0) return 0;
+  if (side === 'buy') {
+    const d = units * (1 / leverage - 1);
+    return d === 0 ? 0 : (effectiveMargin - entryRate * units) / d;
+  } else {
+    const d = units * (1 / leverage + 1);
+    return d === 0 ? 0 : (effectiveMargin + entryRate * units) / d;
+  }
+}
+
+// ========================================
+// Rendering
+// ========================================
+function renderResults(results, initialMargin, rate, leverage, side, pair, lots, swapPerDay) {
+  document.getElementById('resultsSection').classList.add('show');
+  const decimals = pair ? pair.decimals : 3;
+
+  // Status items
+  const reqMargin = rate * lots * 10000 / leverage;
+  const effLev = (rate * lots * 10000) / initialMargin;
+  const lcRate = calcLoscutRate(initialMargin, lots, rate, leverage, side);
+  const dailySwap = swapPerDay * lots;
+
+  document.getElementById('statusRequiredMargin').textContent = formatCurrency(reqMargin);
+  document.getElementById('statusEffectiveLeverage').textContent = effLev.toFixed(2) + '倍';
+  document.getElementById('statusLeverageLimit').textContent = effLev.toFixed(2) + '倍';
+  document.getElementById('statusLoscutRate').textContent = lcRate > 0 ? lcRate.toFixed(decimals) : '-';
+  document.getElementById('statusDailySwap').textContent = formatCurrency(dailySwap);
+
+  // Period table
+  const periodHtml = results.map(r => `
+    <tr>
+      <td style="font-weight:600;">${r.periodLabel}</td>
+      <td>${r.annualReturn.toFixed(1)}%</td>
+      <td>${r.effectiveLeverage.toFixed(2)}倍</td>
+      <td>${r.loscutRate > 0 ? r.loscutRate.toFixed(decimals) : '-'}</td>
+    </tr>
+  `).join('');
+  document.getElementById('periodBody').innerHTML = periodHtml;
+
+  // Debug table
+  const debugHtml = results.map(r => `
+    <tr>
+      <td>${r.periodLabel}</td>
+      <td>${r.periodDays.toLocaleString()}日</td>
+      <td>${formatCurrency(r.totalSwap)}</td>
+      <td>${formatCurrency(r.finalMargin)}</td>
+      <td>${r.currentLots.toFixed(1)}</td>
+      <td>${formatCurrency(r.totalRequiredMargin)}</td>
+      <td>${r.marginRatio.toFixed(1)}%</td>
+      <td>${r.loscutRate > 0 ? r.loscutRate.toFixed(decimals) : '-'}</td>
+    </tr>
+  `).join('');
+  document.getElementById('debugBody').innerHTML = debugHtml;
+
+  renderSwapChart(results);
+  renderPositionChart(results);
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderSwapChart(results) {
+  const ctx = document.getElementById('swapChart').getContext('2d');
+  if (swapChart) swapChart.destroy();
+
+  const isNeg = results[0].totalSwap < 0;
+
+  swapChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: results.map(r => r.periodLabel),
+      datasets: [{
+        data: results.map(r => Math.round(r.totalSwap)),
+        backgroundColor: isNeg ? 'rgba(239,68,68,0.65)' : 'rgba(26,86,219,0.65)',
+        borderColor: isNeg ? 'rgba(239,68,68,1)' : 'rgba(26,86,219,1)',
+        borderWidth: 1,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          color: '#1e293b',
+          font: { size: 14, weight: '800' },
+          formatter: v => formatChartLabel(v),
+        },
+        tooltip: { callbacks: { label: ctx => formatCurrency(ctx.parsed.y) } }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: '#f1f5f9' },
+          ticks: { callback: v => formatChartLabel(v), font: { size: 11 } }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 12, weight: '600' } } }
+      },
+      layout: { padding: { top: 28 } }
+    }
+  });
+}
+
+function renderPositionChart(results) {
+  const ctx = document.getElementById('positionChart').getContext('2d');
+  if (positionChart) positionChart.destroy();
+
+  positionChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: results.map(r => r.periodLabel),
+      datasets: [{
+        data: results.map(r => parseFloat(r.currentLots.toFixed(1))),
+        backgroundColor: 'rgba(245,158,11,0.6)',
+        borderColor: 'rgba(245,158,11,1)',
+        borderWidth: 1,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          color: '#1e293b',
+          font: { size: 14, weight: '800' },
+          formatter: v => Math.floor(v * 10) / 10 === Math.floor(v) ? Math.floor(v) + ' Lot' : v.toFixed(1) + ' Lot',
+        },
+        tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + ' Lot' } }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: '#f1f5f9' },
+          ticks: {
+            callback: v => Number.isInteger(v) ? v + ' Lot' : '',
+            font: { size: 11 }
+          }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 12, weight: '600' } } }
+      },
+      layout: { padding: { top: 28 } }
+    }
+  });
+}
+
+// ========================================
+// Utilities
+// ========================================
+function formatCurrency(val) {
+  const r = Math.round(val);
+  return r < 0 ? '-¥' + Math.abs(r).toLocaleString() : '¥' + r.toLocaleString();
+}
+
+// Chart label: 1万円未満は「¥9,000」等、1万円以上は「XXX万円」
+function formatChartLabel(val) {
+  const abs = Math.abs(val);
+  const sign = val < 0 ? '-' : '';
+  if (abs >= 100000000) return sign + (abs / 100000000).toFixed(1) + '億円';
+  if (abs >= 10000) return sign + Math.round(abs / 10000).toLocaleString() + '万円';
+  return sign + Math.round(abs).toLocaleString() + '円';
+}
+
+function toggleDebug() {
+  const s = document.getElementById('debugSection');
+  const t = document.querySelector('.debug-toggle');
+  if (s.classList.contains('show')) {
+    s.classList.remove('show');
+    t.innerHTML = '&#9654; 内部検証テーブルを表示';
+  } else {
+    s.classList.add('show');
+    t.innerHTML = '&#9660; 内部検証テーブルを非表示';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
