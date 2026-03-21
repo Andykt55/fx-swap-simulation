@@ -357,7 +357,7 @@ h1 {
     <!-- 計算結果: 4 items -->
     <div class="card">
       <div class="card-title">計算結果</div>
-      <div class="status-grid" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="status-grid">
         <div class="status-item">
           <div class="status-label">建玉必要証拠金</div>
           <div class="status-value" id="statusRequiredMargin">-</div>
@@ -365,10 +365,6 @@ h1 {
         <div class="status-item">
           <div class="status-label">実効レバレッジ</div>
           <div class="status-value" id="statusEffectiveLeverage">-</div>
-        </div>
-        <div class="status-item" style="background:#fff3cd;border:1px solid #f59e0b;">
-          <div class="status-label" style="color:#92400e;">再投資レバレッジ上限<br><span style="font-size:0.55rem;color:#b45309;">（実際は表示しない）</span></div>
-          <div class="status-value" id="statusLeverageLimit" style="color:#d97706;">-</div>
         </div>
         <div class="status-item">
           <div class="status-label">ロスカットライン</div>
@@ -664,7 +660,6 @@ function renderResults(results, initialMargin, rate, leverage, side, pair, lots,
 
   document.getElementById('statusRequiredMargin').textContent = formatCurrency(reqMargin);
   document.getElementById('statusEffectiveLeverage').textContent = effLev.toFixed(2) + '倍';
-  document.getElementById('statusLeverageLimit').textContent = effLev.toFixed(2) + '倍';
   document.getElementById('statusLoscutRate').textContent = lcRate > 0 ? lcRate.toFixed(decimals) : '-';
   document.getElementById('statusDailySwap').textContent = formatCurrency(dailySwap);
 
